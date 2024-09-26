@@ -1,0 +1,190 @@
+---
+title: "Assignment 1"
+date: "`r Sys.Date()`"
+author: "Johannes Hedström"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    fig_caption: yes
+    number_sections: yes
+  html_document:
+    df_print: paged
+geometry: top=100pt,bottom=100pt,left=68pt,right=66pt
+header-includes:
+- \usepackage{float}
+- \usepackage{longtable}
+- \usepackage{caption}
+- \usepackage{fancyhdr}
+- \usepackage{titling}
+- \renewcommand{\headrulewidth}{0pt}
+- \renewcommand{\and}{\\}
+- \pretitle{\centering\vspace{0cm}{732A66 Decision Theory \par}\vspace{5cm}\Huge\textbf}
+- \posttitle{\vspace{1cm}\large\textbf{}\par}
+- \preauthor{\centering\vspace{4cm}\normalsize}
+- \postauthor{\par\vspace{2cm}}
+- \predate{\centering{\normalsize STIMA \\
+  Department of Computer and Information Science \\ Linköpings universitet \par}}
+- \postdate{\par\vspace{0cm}}
+- \raggedbottom
+---
+
+
+<!-- page number pos -->
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\pagestyle{fancy}
+
+<!-- no page nr on first page  -->
+\pagenumbering{gobble}
+
+<!-- Anger sidbrytning -->
+\clearpage
+
+<!-- creating the table of contents -->
+\setcounter{tocdepth}{3}
+\tableofcontents
+
+<!-- new page -->
+\clearpage
+
+<!-- starting the count on 1 after the contents -->
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE, fig.width = 5, fig.height = 3, fig.align = 'center', digits=10)
+
+```
+
+```{r}
+library(knitr)
+```
+
+
+# Task 1
+
+A bank official is concerned about the rate at which the bank’s tellers provide service
+for their customers. He feels that all of the tellers work at about the same speed, which
+is either 30, 40 or 50 customers per hour. Furthermore, 40 customers per hour is twice
+as likely as each of the two other values, which are assumed to be equally likely. In
+order to obtain more information, the official observes all five tellers for a two-hour
+period, noting that 380 customers are served during that period.
+Show that the posterior probabilities for the three possible speeds are approximately
+0.000045, 0.99996 and 0.00000012 respectively.
+(Hint: The total amount of 380 customers cannot be equalized with an average amount
+of customers per teller and hour. Using formal calculations instead of simulating data, it
+is easier to confirm the posterior probabilities.)
+
+
+Prior probabilities:
+
+$$P(30)=0.25, P(40)=0.5, P(50)=0.25$$
+
+$$r = 380, t = \text{2 hours times 5 tellers} = 10$$
+
+We get the posterior probabilities from bayes theorem when making inference on $\lambda$ in the poisson process:
+
+$$P(\lambda \mid r, t)=\frac{\lambda^{r} e^{-t\cdot\ \lambda} \cdot P(\lambda)}{30^{r} e^{-t\cdot 30} \cdot 0.25+40^{r} e^{-t\cdot 40} \cdot 0.50+50^{r} e^{-t\cdot 50} \cdot 0.25}$$
+
+
+Applying this on our data and lambda=30 would look like this:
+
+$$P(\lambda=30 \mid r=380, t=10)=\frac{30^{380} e^{-10\cdot\ 30} \cdot 0.25}{30^{380} e^{-10\cdot 30} \cdot 0.25+40^{380} e^{-10\cdot 40} \cdot 0.50+50^{380} e^{-10\cdot 50} \cdot 0.25}$$
+
+This will create problems when calculating as $30^{380}$ will be infinity, so instead we take the log of the formula which gives us the following: 
+
+Likelihood * Prior:
+$$log(\lambda^{r} e^{-t\cdot\ \lambda} \cdot 0.25)= r\cdot log(\lambda)-t\lambda - log(4) $$
+
+The full expression is then: 
+
+\begin{align} \log (P(\lambda \mid r, t))=r \log (\lambda)-t \lambda-\log(4) - \\ 
+\left ((r \ log(30) -10 \cdot 30 - log(4)) + (r \ log(40) -10 \cdot 40 - log(2)) + (r  log(50) -10 \cdot 50 - log(4) \right)) \end{align}
+
+These calculations needs to be scaled to be able to get the exponent for the logged values, this can be done by subtracting with the largest posterior.
+
+This results in : 
+
+$$L(30,480,10)\cdot P(30) =  380\cdot log(30)-10 \cdot 30 - log(4) = 994$$
+
+$$L(40,480,10)\cdot P(40) = r\cdot log(40)-10\cdot 40 - log(4) = 1002$$
+
+$$L(50,480,10)\cdot P(50) = r\cdot log(\lambda)- 10 \cdot 50 - log(4) = 985 $$
+When subtracting with max we get:
+
+$$ LP_{30} - Max(LP)= 994-1002= -8 $$
+
+$$LP_{40} - Max(LP)= 1002-1002 = 0 $$
+
+$$LP_{50} - Max(LP) = 985-1002 = - 17$$
+
+We can now anti log the values.
+
+$$ exp(-8) \approx 8.968675e-05$$
+$$ exp(0) = 1 $$
+$$ exp(-17) \approx 2.490903e-07$$
+
+Now we normalize these values by the sum of them:
+
+
+$$P(\lambda=30 \mid r=380, t=10) = \frac{8.968675e-05}{\sum 8.968675e-05 +1 + 2.490903e-07} \approx 0.000045 $$
+$$P(\lambda=40 \mid r=380, t=10) = \frac{1}{\sum 8.968675e-05 +1 + 2.490903e-07} \approx 0.99996 $$
+$$P(\lambda=50 \mid r=380, t=10) = \frac{2.490903e-07} {\sum 8.968675e-05 +1 + 2.490903e-07} \approx 0.00000012 $$
+
+
+Below we have a function which checks that this will return the correct results
+
+```{r}
+log_P <- function(lambda, r, t,p) {
+  # First part of the expression: r * log(lambda) - t * lambda - log(4)
+  part1 <- r * log(lambda) - t * lambda + log(p)
+  
+  # By subracting with maximum of the log values we avoid overflow(values to infinity) and anti log
+  part1 <- exp(part1-max(part1))
+  
+  # Final result: Normalizing the values with sum
+  log_P_value <- part1 / sum(part1)
+  
+  return(log_P_value)
+}
+
+# running the function
+res <- data.frame(log_P(c(30,40,50),380,10,c(0.25,0.5,0.25)))
+
+colnames(res) <- 'Posterior probabilities'
+
+rownames(res) <- c('P(30)', 'P(40)', 'P(50)')
+
+knitr::kable(res, digits=10)
+
+```
+
+
+
+
+# Task 2
+
+Assume you have decided to bet on a horse race, and that you have very little
+knowledge about the competing horses. You consider betting on Little Joe, and you see
+that the odds for this horse are 9 to 1 (i.e. odds against that the horse will win). You
+decide to look up some historical tracks on how Little Joe has performed recently and
+note that he has won in 2 of the last 10 races he competed in. You can assume that these
+races are fairly comparable with respect to the levels of his competitors.
+a) Using the above as your background information, what are your subjective odds for
+Little Joe?
+b) If you bet, you will obtain 9 times the money you have put in the bet. What is your
+subjective expected return from betting on Little Joe?
+
+
+## a)
+
+
+
+## b)
+
+
+```{r}
+
+```
+
+
