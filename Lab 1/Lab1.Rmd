@@ -105,31 +105,31 @@ These calculations needs to be scaled to be able to get the exponent for the log
 
 This results in : 
 
-$$L(30,480,10)\cdot P(30) =  380\cdot log(30)-10 \cdot 30 - log(4) = 994$$
+$$L(30,480,10)\cdot P(30) =  380\cdot log(30)-10 \cdot 30 - log(4) = 991$$
 
-$$L(40,480,10)\cdot P(40) = r\cdot log(40)-10\cdot 40 - log(4) = 1002$$
+$$L(40,480,10)\cdot P(40) = r\cdot log(40)-10\cdot 40 - log(2) = 1001$$
 
 $$L(50,480,10)\cdot P(50) = r\cdot log(\lambda)- 10 \cdot 50 - log(4) = 985 $$
 When subtracting with max we get:
 
-$$ LP_{30} - Max(LP)= 994-1002= -8 $$
+$$ LP_{30} - Max(LP)= 991-1001= -10 $$
 
-$$LP_{40} - Max(LP)= 1002-1002 = 0 $$
+$$LP_{40} - Max(LP)= 1001-1001 = 0 $$
 
-$$LP_{50} - Max(LP) = 985-1002 = - 17$$
+$$LP_{50} - Max(LP) = 985-1001 = - 16$$
 
 We can now anti log the values.
 
-$$ exp(-8) \approx 8.968675e-05$$
+$$ exp(-10) \approx 4.484337e-05$$
 $$ exp(0) = 1 $$
-$$ exp(-17) \approx 2.490903e-07$$
+$$ exp(-16) \approx 1.245451e-07$$
 
 Now we normalize these values by the sum of them:
 
 
-$$P(\lambda=30 \mid r=380, t=10) = \frac{8.968675e-05}{\sum 8.968675e-05 +1 + 2.490903e-07} \approx 0.000045 $$
-$$P(\lambda=40 \mid r=380, t=10) = \frac{1}{\sum 8.968675e-05 +1 + 2.490903e-07} \approx 0.99996 $$
-$$P(\lambda=50 \mid r=380, t=10) = \frac{2.490903e-07} {\sum 8.968675e-05 +1 + 2.490903e-07} \approx 0.00000012 $$
+$$P(\lambda=30 \mid r=380, t=10) = \frac{4.484337e-05}{ 4.484337e-05 +1 + 1.245451e-07} \approx 0.000045 $$
+$$P(\lambda=40 \mid r=380, t=10) = \frac{1}{ 4.484337e-05 +1 +1.245451e-07} \approx 0.99996 $$
+$$P(\lambda=50 \mid r=380, t=10) = \frac{ 1.245451e-07} { 4.484337e-05 +1 + 1.245451e-07} \approx 0.00000012 $$
 
 
 Below we have a function which checks that this will return the correct results
@@ -139,7 +139,7 @@ log_P <- function(lambda, r, t,p) {
   # First part of the expression: r * log(lambda) - t * lambda - log(4)
   part1 <- r * log(lambda) - t * lambda + log(p)
   
-  # By subracting with maximum of the log values we avoid overflow(values to infinity) and anti log
+  # Subracting with maximum of the log values to rescale values
   part1 <- exp(part1-max(part1))
   
   # Final result: Normalizing the values with sum
@@ -148,8 +148,13 @@ log_P <- function(lambda, r, t,p) {
   return(log_P_value)
 }
 
+lambda <- c(30,40,50)
+r <- 380
+t <- 10
+p <- c(0.25,0.5,0.25)
+
 # running the function
-res <- data.frame(log_P(c(30,40,50),380,10,c(0.25,0.5,0.25)))
+res <- data.frame(log_P(lambda, r,t,p))
 
 colnames(res) <- 'Posterior probabilities'
 
@@ -162,6 +167,7 @@ knitr::kable(res, digits=10)
 
 
 
+
 # Task 2
 
 Assume you have decided to bet on a horse race, and that you have very little
@@ -170,9 +176,11 @@ that the odds for this horse are 9 to 1 (i.e. odds against that the horse will w
 decide to look up some historical tracks on how Little Joe has performed recently and
 note that he has won in 2 of the last 10 races he competed in. You can assume that these
 races are fairly comparable with respect to the levels of his competitors.
-a) Using the above as your background information, what are your subjective odds for
+
+* a) Using the above as your background information, what are your subjective odds for
 Little Joe?
-b) If you bet, you will obtain 9 times the money you have put in the bet. What is your
+
+* b) If you bet, you will obtain 9 times the money you have put in the bet. What is your
 subjective expected return from betting on Little Joe?
 
 
@@ -180,11 +188,38 @@ subjective expected return from betting on Little Joe?
 
 
 
-## b)
+$$P_E = P(E|I,n,E) = \frac{a+n_E}{a+b+n}$$
 
 
+$$P_E = P(E|I,n,E) = \frac{1+2}{1+9+10} = \frac{3}{20}= 0.15$$
+
+$$Odds_E = \frac{P_E}{1-P_E}$$
+
+$$Odds_E = \frac{0.15}{0.85} = 3/17 = 0.1764706 $$
+ 
+ 
+ 
 ```{r}
+Pe <- 3/20 # prob 
+
+Odds_pe <- Pe/(1-Pe) # odds
+
+3/17 == Odds_pe # check if the same
 
 ```
 
+
+My subjective odds is that the odds against that Little Joe will win is 17 to 3 and the odds for Little Joe is then 0.1764706.
+
+
+
+
+## b)
+
+```{r}
+# Return
+17/3
+```
+ 
+The return if Little Joe wins is 5.66 times the money betted.  
 
