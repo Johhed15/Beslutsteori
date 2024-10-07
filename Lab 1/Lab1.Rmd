@@ -101,7 +101,7 @@ The full expression is then:
 \begin{align} \log (P(\lambda \mid r, t))=r \log (\lambda)-t \lambda-\log(4) - \\ 
 \left ((r \ log(30) -10 \cdot 30 - log(4)) + (r \ log(40) -10 \cdot 40 - log(2)) + (r  log(50) -10 \cdot 50 - log(4) \right)) \end{align}
 
-These calculations needs to be scaled to be able to get the exponent for the logged values, this can be done by subtracting with the largest posterior.
+These calculations needs to be scaled to be able to get the exponent for the logged values, this can be done by subtracting with the largest likelihood as calculating exp on large negative values is not a computational problem.
 
 This results in : 
 
@@ -165,7 +165,48 @@ knitr::kable(res, digits=10)
 ```
 
 
+Another way of solving this question could be with utilizing the exponential class of distributions.
 
+$$f(x|\theta) = f(x|\lambda) = e^{(ln\lambda)\cdot x - lnx! -\lambda}$$
+Where $A(\lambda)= ln \lambda\cdot t$,$B(x)=380$, $-lnx!=-\Gamma(x+1)=C=-\Gamma(381)$(constant) and $D(\lambda)=-\lambda\cdot t$.
+
+This results in :
+
+$$ f(x|30) = e^{(ln300)\cdot 380 - \Gamma 381 -300}$$
+
+$$f(x|40) = e^{(ln 400)\cdot 380 - \Gamma 381 -400}$$
+
+$$f(x|50) = e^{(ln 500)\cdot 380 - \Gamma 381 -500}$$
+
+Then from these results use your prior and likelihood to get the posterior probabilities. 
+
+
+$$P(\lambda=30|data) = \frac{f(x|30)\cdot0.25}{f(x|30)\cdot0.25+ f(x|40)\cdot0.50+ f(x|50)\cdot0.25}$$
+
+$$P(\lambda=40|data) = \frac{f(x|40)\cdot0.50}{f(x|30)\cdot0.25+ f(x|40)\cdot0.50+ f(x|50)\cdot0.25}$$
+
+$$P(\lambda=50|data) = \frac{f(x|50)\cdot0.25}{f(x|30)\cdot0.25+ f(x|40)\cdot0.50+ f(x|50)\cdot0.25}$$
+
+
+```{r}
+
+# calculating likelihood
+lik <- exp(log(t*lambda)*r-lfactorial(r+1)-t*lambda)
+
+# posterior probabilities
+posteriot<- lik*p/(sum(lik*p))
+
+res <- data.frame(posteriot)
+
+colnames(res) <- 'Posterior probabilities'
+
+rownames(res) <- c('P(30)', 'P(40)', 'P(50)')
+
+knitr::kable(res, digits=10)
+
+```
+
+Same results as in the question and as the first method, but this is the preferred way to solve the question as its a much simpler.
 
 
 # Task 2
@@ -216,10 +257,21 @@ My subjective odds is that the odds against that Little Joe will win is 17 to 3 
 
 ## b)
 
+Subjective expected return 
+
+$$P_E \cdot 9 + (1-P_E) \cdot {-1}$$
+
+Using our subjective probabilities gives us: 
+
+$$0.15 \cdot 9 + 0.85 \cdot {-1} = 0.5$$
+
 ```{r}
-# Return
-17/3
+# Expected Return
+
+(9*0.15) - 0.85
+
 ```
  
-The return if Little Joe wins is 5.66 times the money betted.  
+The subjective expected return from the bet is 0.5, which mean that on average you expect to make a 50% profit for every money spent on the bet. 
+
 
