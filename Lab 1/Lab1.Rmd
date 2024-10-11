@@ -101,7 +101,7 @@ The full expression is then:
 \begin{align} \log (P(\lambda \mid r, t))=r \log (\lambda)-t \lambda-\log(4) - \\ 
 \left ((r \ log(30) -10 \cdot 30 - log(4)) + (r \ log(40) -10 \cdot 40 - log(2)) + (r  log(50) -10 \cdot 50 - log(4) \right)) \end{align}
 
-These calculations needs to be scaled to be able to get the exponent for the logged values, this can be done by subtracting with the largest likelihood as calculating exp on large negative values is not a computational problem.
+These calculations needs to be scaled to be able to get the exponent for the logged values, this can be done by subtracting with the largest value as calculating exp on large negative values is not a computational problem.
 
 This results in : 
 
@@ -206,7 +206,7 @@ knitr::kable(res, digits=10)
 
 ```
 
-Same results as in the question and as the first method, but this is the preferred way to solve the question as its a much simpler.
+Same results as in the question and as the first method, and this is the preferred way to solve the question as its a much simpler.
 
 
 # Task 2
@@ -250,7 +250,7 @@ Odds_pe <- Pe/(1-Pe) # odds
 ```
 
 
-My subjective odds is that the odds against that Little Joe will win is 17 to 3 and the odds for Little Joe is then 0.1764706.
+My subjective odds is that the odds against that Little Joe will win is 17 to 3 and the odds for Little Joe is then 3 to 17.
 
 
 
