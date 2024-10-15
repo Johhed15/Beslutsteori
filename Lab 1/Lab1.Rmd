@@ -259,19 +259,19 @@ My subjective odds is that the odds against that Little Joe will win is 17 to 3 
 
 Subjective expected return 
 
-$$P_E \cdot 9 + (1-P_E) \cdot {-1}$$
+$$P_E \cdot 9 + (1-P_E) \cdot 0$$
 
 Using our subjective probabilities gives us: 
 
-$$0.15 \cdot 9 + 0.85 \cdot {-1} = 0.5$$
+$$0.15 \cdot 9 + 0.85 \cdot 0 = 1.35$$
 
 ```{r}
 # Expected Return
 
-(9*0.15) - 0.85
+(9*0.15) 
 
 ```
  
-The subjective expected return from the bet is 0.5, which mean that on average you expect to make a 50% profit for every money spent on the bet. 
+The subjective expected return from the bet is 1.35, which mean that on average you expect to make a 35% profit for every money spent on the bet.
 
 
