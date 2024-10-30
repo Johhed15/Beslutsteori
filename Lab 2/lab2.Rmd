@@ -1,0 +1,167 @@
+---
+title: "Assignment 2"
+date: "`r Sys.Date()`"
+author: "Johannes Hedström"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    fig_caption: yes
+    number_sections: yes
+  html_document:
+    df_print: paged
+geometry: top=100pt,bottom=100pt,left=68pt,right=66pt
+header-includes:
+- \usepackage{float}
+- \usepackage{longtable}
+- \usepackage{caption}
+- \usepackage{fancyhdr}
+- \usepackage{titling}
+- \renewcommand{\headrulewidth}{0pt}
+- \renewcommand{\and}{\\}
+- \pretitle{\centering\vspace{0cm}{732A66 Decision Theory \par}\vspace{5cm}\Huge\textbf}
+- \posttitle{\vspace{1cm}\large\textbf{}\par}
+- \preauthor{\centering\vspace{4cm}\normalsize}
+- \postauthor{\par\vspace{2cm}}
+- \predate{\centering{\normalsize STIMA \\
+  Department of Computer and Information Science \\ Linköpings universitet \par}}
+- \postdate{\par\vspace{0cm}}
+- \raggedbottom
+---
+
+
+<!-- page number pos -->
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\pagestyle{fancy}
+
+<!-- no page nr on first page  -->
+\pagenumbering{gobble}
+
+<!-- Anger sidbrytning -->
+\clearpage
+
+<!-- creating the table of contents -->
+\setcounter{tocdepth}{3}
+\tableofcontents
+
+<!-- new page -->
+\clearpage
+
+<!-- starting the count on 1 after the contents -->
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE, fig.width = 5, fig.height = 3, fig.align = 'center', digits=10)
+
+```
+
+```{r}
+library(knitr)
+```
+
+
+# Task 1
+
+One decision-making criterion for decision-making under ignorance (non-probabilistic
+criterion) involves the consideration of a weighted average of the highest and lowest
+payoffs for each action. The weights, which must sum to 1, can be thought of as an
+optimism-pessimism index. The action with the highest weighted average of the highest
+and lowest payoffs is the action chosen by this criterion.
+Comment on this decision-making criterion and use it (i.e. find the optimal action) for
+payoff table (i) below with the highest payoff in each row receiving a weight of 0.4 and
+the lowest payoff receiving a weight of 0.6
+
+```{r}
+# Define the highest and lowest payoffs for each action
+payoff_table <- data.frame(
+  Action = c(1, 2, 3, 4),
+  A = c(-50, 30, 10, -10),
+  B = c(80, 40, 30, -50),
+  C = c(20, 70, -30, -70),
+  D = c(100, 20, 10, -20),
+  E = c(0, 50, 40, 200)
+)
+knitr::kable(payoff_table)
+```
+
+Highest payoff for each action is weighted by 0.4 which is the optimism of this index. The lowest payoff times 0.6 is the pessimism of this index. This reflects a balanced approach which could be reasonable as we are doing decision- making without knowing the probabilities for each state given the action. To have a bit higher weight for the lowest payoff indicates that we go for a bit more cautions approach, avoiding risks rather than maximizing the possible payoff. 
+
+
+$$Action 1: 100\cdot 0.4 + (-50)\cdot 0.6 =10 $$
+$$Action 2: 50\cdot 0.4 + 20\cdot 0.6  = 40 $$
+$$Action 3: 40\cdot 0.4 + (-30)\cdot 0.6 = -2$$
+$$Action 4: 100\cdot 0.4 + (-70)\cdot 0.6 = 38$$
+
+Action 2 is the optimal one according to this index and weights!
+
+
+
+
+# Task 2
+
+
+```{r}
+
+#install.packages("gt")
+library(gt)
+
+# Define the payoff table
+payoff_table <- data.frame(
+  'Action' = c(1, 2),
+  "State I" = c(10, 7),
+  "State II" = c(4, 9)
+)
+
+colnames(payoff_table) <- c('Action',"State I","State II")
+
+# Create the table with a grouped column header for "States of the World"
+payoff_table %>%
+  gt() %>%
+  tab_spanner(
+    label = "States of the World",
+    columns = c("State I", "State II")
+  ) %>%
+  tab_header(
+    title = "Payoff Table (ii)"
+  )
+
+
+```
+
+## a)
+
+Find the optimal action for payoff table (ii) below using the decision-making criterion described in task 1, with the highest payoff in each row receiving a weight of 0.8 and the lowest payoff receiving a weight of 0.2.
+ 
+$$Action 1: 0.8 \cdot 10 + 0.2 \cdot 4 = 8.8 $$
+
+$$Action 2: 0.8 \cdot 9 + 0.2 \cdot 7 = 8.6 $$
+
+Optimal payoff with the criterion in task one is for action 1.
+
+
+## b)
+
+For payoff table (ii) the ER criterion (maximising the expected payoff) would also involve a weighted average of the two payoffs in each row. Assign the probability 0.8 to state I in payoff table (ii) and find the optimal action with the ER-criterion.
+
+
+$$Action 1: 0.8 \cdot 10 + 0.2 \cdot 4 = 8.8 $$
+
+$$Action 2: 0.8 \cdot 7 + 0.2 \cdot 9 = 7.4 $$
+
+Action one has the maximum expected payoff
+
+## c)
+Compare the outcomes with the two criteria and comment.
+
+Instead of weights depending on the highest and lowest payoffs, we have probabilities for the states which isn't a decision under ignorance anymore. The difference here is for action 2, as its lowest payoff has the highest probability and will affect the expected reward more than the criterion in part a), resulting in a lower value. In a) we rewarded the highest payoffs very optimistically with a weight of 0.8, and as that is the same probability for state 1, there is no difference in the calculations for action 1. If we would have been more pessimistic in a), action 2 would quickly get the highest value, leading to a non optimal decision now when we know the probabilities of the states. This shows how hard it is to do decisions without data.
+
+
+# Task 3
+
+Consider payoff table (i) in task 1. Assume the utility function of a person is
+$U(R) = log(R+71)$, where R is the payoff (and log is the natural logarithm with base e).
+Assign the probabilities $p = (0.10, 0.20, 0.25, 0.10, 0.35)$ to the states vector $(A, B, C,D, E)$ and find the optimal action according to the EU-criterion (maximizing expected utility).
+
+
+
