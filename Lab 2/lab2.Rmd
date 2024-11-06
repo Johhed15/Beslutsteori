@@ -97,11 +97,12 @@ Action 2 is the optimal one according to this index and weights!
 
 
 
+\newpage
 
 # Task 2
 
 
-```{r}
+```{r, echo=FALSE}
 
 #install.packages("gt")
 library(gt)
@@ -162,6 +163,60 @@ Instead of weights depending on the highest and lowest payoffs, we have probabil
 Consider payoff table (i) in task 1. Assume the utility function of a person is
 $U(R) = log(R+71)$, where R is the payoff (and log is the natural logarithm with base e).
 Assign the probabilities $p = (0.10, 0.20, 0.25, 0.10, 0.35)$ to the states vector $(A, B, C,D, E)$ and find the optimal action according to the EU-criterion (maximizing expected utility).
+
+
+As the utility function is concave it characterizes a risk avoider.
+
+We calculate the expected utility for an action with:
+
+$$EU(Action_i) = \sum _{j=1} ^n p_j \cdot U(R_{ij})$$
+
+Which is the same as:
+
+$$EU(Action_i) : p_1 \cdot U(R_{iA})+ p_2 \cdot U(R_{iB})+p_3 \cdot U(R_{iC})+p_4 \cdot U(R_{iD})+p_5 \cdot U(R_{iE}) $$
+
+Where every utility is calculated according to:
+
+$$U(R_{ij}) = log(R_{ij} + 71)$$ 
+
+$$EU(Action 1): 0.10 \cdot log(-50 +71)+ 0.2 \cdot log(80 +71)+0.25 \cdot log(20 +71)+0.10 \cdot log(100 +71)+0.35 \cdot log(0 +71) = 4.541559 $$
+
+
+$$EU(Action 2): 0.10 \cdot log(30 +71)+ 0.2 \cdot log(40 +71)+0.25 \cdot log(70 +71)+0.10 \cdot log(20 +71)+0.35 \cdot log(50 +71) = 4.603129 $$
+
+
+$$EU(Action 3): 0.10 \cdot log(10 +71)+ 0.2 \cdot log(30 +71)+0.25 \cdot log(-30 +71)+0.10 \cdot log(10 +71)+0.35 \cdot log(40 +71) =4.372491 $$
+
+
+$$EU(Action 4): 0.10 \cdot log(-10 +71)+ 0.2 \cdot log(-50 +71)+0.25 \cdot log(-70 +71)+0.10 \cdot log(-20 +71)+0.35 \cdot log(200 +71) =3.391193 $$
+
+```{r}
+
+payoff_table <- data.frame(
+  Action = c(1, 2, 3, 4),
+  A = c(-50, 30, 10, -10),
+  B = c(80, 40, 30, -50),
+  C = c(20, 70, -30, -70),
+  D = c(100, 20, 10, -20),
+  E = c(0, 50, 40, 200)
+)
+
+ex_u <- c()
+
+for(i in 1:4){
+  foo <- 0.1*log(payoff_table[i,1]+71) + 0.2*log(payoff_table[i,2]+71)+
+  0.25*log(payoff_table[i,3]+71)+
+  0.1*log(payoff_table[i,4]+71)+
+  0.35*log(payoff_table[i,5]+71)
+  ex_u <- c(ex_u, foo)  
+}
+
+
+ex_u
+
+cat('The optimal action according to the EU-criterion is action number', which.max(ex_u))
+```
+
 
 
 
