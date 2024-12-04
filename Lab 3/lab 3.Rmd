@@ -48,7 +48,7 @@ header-includes:
 \setcounter{page}{1}
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE, fig.width = 5, fig.height = 3, fig.align = 'center', digits=10)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE, fig.width = 7, fig.height = 3, fig.align = 'center', digits=10)
 
 ```
 
@@ -76,7 +76,7 @@ library(knitr)
 
 **Potential obstacles and costs; assumptions and assigned prior probabilities:**
 
-* The probability that the train is delayed by x minutes is (45 – x)0.001
+* The probability that the train is delayed by x minutes is (45 – x)*0.001
 
 * It can be assumed that the train will not derail or break down
 
@@ -173,11 +173,11 @@ y2 <- (90-y)*0.0002
 plot(y,y2, type='l', main='Probability of y minutes of traffic delay(red line is missing the flight)',
 ylab='Probability', xlab='Minutes')
 
-abline(v = 61, col = 'red', lty = 2)
+abline(v = 76, col = 'red', lty = 2)
 
-paste0('Probability of the delay being over 60 minutes is ',sum(y2[61:length(y2)])*100, '%')
+paste0('Probability of the delay being over 75 minutes is ',sum(y2[76:length(y2)])*100, '%')
 
-paste0('Probability of the delay being at max 60 minutes and no car accident is  ', 100 - ((sum(y2[61:length(y2)])*100) - 1), '%')
+paste0('Probability of the delay being at max 75 minutes and no car accident is  ', (((1 - sum(y2[76:length(y2)])) - 0.01)*100), '%')
 
 ```
 
@@ -259,8 +259,8 @@ P_train_miss_delay <- sum(x2[31:length(x2)])
 
 
 
-P_car_catch <- 1 - sum(y2[61:length(y2)]) - 0.01 # P(S1 | Car)
-P_car_miss_delay <- sum(y2[61:length(y2)]) 
+P_car_catch <- (1 - sum(y2[76:length(y2)])) - 0.01 # P(S1 | Car)
+P_car_miss_delay <- sum(y2[76:length(y2)]) 
 P_car_miss_accident <- 0.005
 P_car_miss_accident_inj <-0.004 
 P_car_miss_accident_hos <- 0.001
@@ -327,18 +327,20 @@ So for the subordinate problem when not considering the occurrence of an acciden
 $$EL(Action_i) = \sum _{j=1} ^n p_j \cdot L_{ij}$$
 
 $$EL(Train) =  50 \cdot 0.895 + 350 \cdot 0.105$$
-$$EL(Car) = 70 \cdot 0.913 + 370 \cdot 0.087$$
+$$EL(Car) = 70 \cdot 0.979 + 370 \cdot  0.021$$
 ```{r}
 paste('Expected loss for train is =',sum(expected_cost_train[1:2]))
-paste('Expected loss for car is =',70 * 0.913 + 370 * 0.087)
+paste('Expected loss for car is =',70 * (1- 0.021) + 370 *  0.021)
 ```
 
-When using the EU-criterion and minimizing the expected loss, the decision is to take the train. If we then add the accident, the difference between the two decision will only grow larger, the expected loss for taking the train will stay the same, and the loss for taking the car will increase. 
+When using the EU-criterion and minimizing the expected loss, the decision is to take the car if we're not considering the accident.
 
+
+But for the problem I set up in question 1 with the added states and costs the expected loss is then:
 
 ```{r}
 paste('Expected loss for train is =',sum(expected_cost_train))
 paste('Expected loss for car is =',sum(expected_cost_car))
 ```
 
-
+And when considering the accident and with the costs I've set, the minimal loss according to the EU-criterion is then to take the train. 
