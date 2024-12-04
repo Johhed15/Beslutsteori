@@ -95,13 +95,250 @@ library(knitr)
 
 
 
+**Questions to be answered and dwelled on:**
+
+
+* Which are the actions, states of nature and consequences?
+
+* Is it possible to view (model) this as one single decision problem? Why (not)?
+
+* What decision problem could you define for which it is possible to use the EU-criterion (maximising the expected utility or minimising the expected loss)? This could be a subordinate decision problem. 
+
+
+# Answers 
+
+## Which are the actions, states of nature and consequences?
+
+**Actions**
+
+The two things you are suppose to decide on are:
+
+A1:Travel by car (denoted as C, cost of 70€)
+
+A2:Travel by train (denoted as T, cost of 50€)
+
+**States of nature**
+
+
+S1: Catch the flight(arrival at latest 9:30 am)
+
+S2: Miss the flight due to delay(arrival after 9:30 am)
+
+S3: Miss the flight due to accident
+
+S4: Miss the flight due to accident(injured)
+
+S5: Miss the flight due to accident(hospitalized/dead)
+
+What affects the states for the different actions
+
+T1: Train on time
+
+T2: Train delayed by x minutes(depending on the amount of delay)
+
+
+```{r}
+# prob of delay 
+x <- 1:45
+x2 <- (45-x)*0.001
+
+plot(x,x2, type='l', main='Probability of x minutes of train delay(red line is missing the flight)',
+ylab='Probability', xlab='Minutes')
+abline(v = 31, col = 'red', lty = 2)
+
+paste0('Probability of the delay being over 30 minutes is ',sum(x2[31:length(x2)])*100, '%')
+
+```
 
 
 
+Car:
+
+C1: Car journey without traffic incident
+
+C2: Journey delayed by y minutes(depending on amount of delay)
+
+C3: Involved in a car accident (P = 0.5%, assuming that an accident is independent of delay)
+
+C4: Involved in a car accident and injured (P = 0.4%, assuming that an accident is independent of delay)
+
+C5: Involved in a car accident and hospitalized (P = 0.1%, assuming that an accident is independent of delay)
+
+```{r}
+y <- 1:90 
+
+y2 <- (90-y)*0.0002
+
+
+plot(y,y2, type='l', main='Probability of y minutes of traffic delay(red line is missing the flight)',
+ylab='Probability', xlab='Minutes')
+
+abline(v = 61, col = 'red', lty = 2)
+
+paste0('Probability of the delay being over 60 minutes is ',sum(y2[61:length(y2)])*100, '%')
+
+paste0('Probability of the delay being at max 60 minutes and no car accident is  ', 100 - ((sum(y2[61:length(y2)])*100) - 1), '%')
+
+```
 
 
 
+**Consequences**
+
+For both train and car journey without a delay or with a minimal delay the consequence is:
+
+Catch the flight, so the cost is then 50€ by train and 70€ by car.
+
+$$Cost1(T, \text{catch flight}) = 50$$
+
+$$Cost1(C, \text{catch flight}) = 70$$
+
+When the train is delayed for more than 30 minutes, if the car is stuck in traffic jam for more than 60 minutes or if you're involved in a car accident the consequence is:
+
+Miss the flight, the costs here are then 50/70€ plus additional 300€ for missing the flight. 
+
+$$\text{Cost2(T, miss flight due to delay)} = 350$$
+
+$$\text{Cost2(C, miss flight due to delay)} = 370$$
+
+If you're involved in a car accident you could get injured or die which add more costs, and as I'm a student, my car would be cheap, lets say 1000 euros, but my insurance covers cost over 300 euros so the cost of an action without hospitalization is then an added 300 euros. I also assume that when involved in a car accident, no other car is involved as that would increase or decrease the cost depending of what/who is responsible of the accident.
+
+If i get injured and need medical care it will add another 20 euros to the cost(its cheap in Sweden), but the cost of getting hospitalized or dead is harder to set a number on. But if you consider the cost only in money, for me to die would cost me 0, but to get hospitalized for a long time would cost 13 euros per day, lets say the mean time in the hospital after a car accident is 10 days, so then that would add 130 additional euros(this is only for simplicity).
+
+Now we need to use the probabilities for each one of these scenarios to get the cost for a car accident. 
+
+Crashed car = 300€
+
+Medical care = 20€
+
+Hospitalized = 130€
 
 
+$$\text{Cost3(T, miss flight due to accident)} = 0$$
+
+$$\text{Cost3(C, miss flight due to accident)} = 370 + 318 = 670$$
+
+$$\text{Cost4(T, miss flight due to accident and injured)} = 0$$
+
+$$\text{Cost4(C, miss flight due to accident and injured)} = 370 + 320 = 690$$
+
+$$\text{Cost5(T, miss flight due to accident  and hospitalized/dead)} = 0$$
+
+
+$$\text{Cost5(C, miss flight due to accident and hospitalized/dead)} = 370 + 430 = 800$$
+
+```{r}
+# Create the decision matrix
+decision_matrix <- data.frame(
+  Action = c("Train (A1)", "Car (A2)"),
+  'Catch the Flight (S1)' = c(50, 70),
+  'Miss Flight (Delay, S2)' = c(350, 370),
+  'Miss Flight (Accident, S3)' = c(0, 670),
+  'Miss Flight (Accident(injured), S4)' = c(0, 690),
+  'Miss Flight (Accident(hospital), S5)' = c(0, 800)
+)
+
+# Print the decision matrix in a readable format
+knitr::kable(
+  decision_matrix,
+  caption = "Decision Matrix: Costs for Each Action and State of Nature",
+  col.names = c("Action", "Catch the Flight (S1)", 
+                "Miss Flight (Delay, S2)", 
+                "Miss Flight (Accident, S3)",
+               'Miss Flight (Accident(injured), S4)',
+                'Miss Flight (Accident(hospital), S5)')
+)
+```
+
+
+
+```{r}
+# Define probabilities for train and car
+P_train_catch <- 1 - sum(x2[31:length(x2)]) # P(S1 | Train)
+P_train_miss_delay <- sum(x2[31:length(x2)]) 
+
+
+
+P_car_catch <- 1 - sum(y2[61:length(y2)]) - 0.01 # P(S1 | Car)
+P_car_miss_delay <- sum(y2[61:length(y2)]) 
+P_car_miss_accident <- 0.005
+P_car_miss_accident_inj <-0.004 
+P_car_miss_accident_hos <- 0.001
+
+# Define costs for each state and action
+cost_train <- c(50, 350) 
+cost_car <- c(70, 370, 670,690,800) 
+
+# Expected costs for each action
+expected_cost_train <- c(P_train_catch * cost_train[1] ,
+                       P_train_miss_delay * cost_train[2] ,
+                       0,0,0)
+
+expected_cost_car <- c(P_car_catch * cost_car[1] ,
+                     P_car_miss_delay * cost_car[2] , 
+                     P_car_miss_accident * cost_car[3],
+                     P_car_miss_accident_inj* cost_car[4],
+                     P_car_miss_accident_hos*cost_car[5])
+
+
+df <- rbind(expected_cost_train,expected_cost_car)
+
+knitr::kable(
+  df,
+  caption = "Decision Matrix: Expected costs for Each Action and State of Nature",
+  col.names = c("Action", "Catch the Flight (S1)", 
+                "Miss Flight (Delay, S2)", 
+                "Miss Flight (Accident, S3)",
+               'Miss Flight (Accident(injured), S4)',
+                'Miss Flight (Accident(hospital), S5)')
+)
+
+
+```
+
+## Is it possible to view (model) this as one single decision problem? Why (not)?
+
+
+This is how I think everyone reason for this problem in real life, and only focus on the delay and cost of car/train ticket:
+
+If you consider yourself a good driver(which most of us do) and ignore the probability of being in a car accident then this is possible to model.
+
+The problem contains:
+
+* All actions and outcomes are measurable (monetary costs).
+
+* States of nature are probabilistic, with known probabilities.
+
+* The utility (or loss) is additive and calculable.
+
+And as there is no dominating action with lowest cost in all states.
+
+
+
+But as I added the car accident as a state, we need to add more costs(which I just made up), it is also possible that you want to split being hospitalized and dying with different probabilities which I didn't consider, and what is really the cost of dying?
+
+According to me you cant really set the cost of dying in the same category as money(the cost used in the problem), and therefore my problem, when not simplified is not a single decision problem. You first have to decide if it is worth the risk of dying when taking the car, then you can consider the decision problem with money as the cost.
+
+
+## What decision problem could you define for which it is possible to use the EU-criterion (maximising the expected utility or minimising the expected loss)? This could be a subordinate decision problem. 
+
+So for the subordinate problem when not considering the occurrence of an accident, the expected loss is 
+
+$$EL(Action_i) = \sum _{j=1} ^n p_j \cdot L_{ij}$$
+
+$$EL(Train) =  50 \cdot 0.895 + 350 \cdot 0.105$$
+$$EL(Car) = 70 \cdot 0.913 + 370 \cdot 0.087$$
+```{r}
+paste('Expected loss for train is =',sum(expected_cost_train[1:2]))
+paste('Expected loss for car is =',70 * 0.913 + 370 * 0.087)
+```
+
+When using the EU-criterion and minimizing the expected loss, the decision is to take the train. If we then add the accident, the difference between the two decision will only grow larger, the expected loss for taking the train will stay the same, and the loss for taking the car will increase. 
+
+
+```{r}
+paste('Expected loss for train is =',sum(expected_cost_train))
+paste('Expected loss for car is =',sum(expected_cost_car))
+```
 
 
