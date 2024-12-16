@@ -1,0 +1,236 @@
+---
+title: "Assignment 4"
+date: "`r Sys.Date()`"
+author: "Johannes Hedström"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    fig_caption: yes
+    number_sections: yes
+  html_document:
+    df_print: paged
+geometry: top=100pt,bottom=100pt,left=68pt,right=66pt
+header-includes:
+- \usepackage{float}
+- \usepackage{longtable}
+- \usepackage{caption}
+- \usepackage{fancyhdr}
+- \usepackage{titling}
+- \renewcommand{\headrulewidth}{0pt}
+- \renewcommand{\and}{\\}
+- \pretitle{\centering\vspace{0cm}{732A66 Decision Theory \par}\vspace{5cm}\Huge\textbf}
+- \posttitle{\vspace{1cm}\large\textbf{}\par}
+- \preauthor{\centering\vspace{4cm}\normalsize}
+- \postauthor{\par\vspace{2cm}}
+- \predate{\centering{\normalsize STIMA \\
+  Department of Computer and Information Science \\ Linköpings universitet \par}}
+- \postdate{\par\vspace{0cm}}
+- \raggedbottom
+---
+
+
+<!-- page number pos -->
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\pagestyle{fancy}
+
+<!-- no page nr on first page  -->
+\pagenumbering{gobble}
+
+<!-- Anger sidbrytning -->
+\clearpage
+
+<!-- new page -->
+\clearpage
+
+<!-- starting the count on 1 after the contents -->
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE, fig.width = 7, fig.height = 3, fig.align = 'center', digits=10)
+
+```
+
+```{r, echo=FALSE}
+library(knitr)
+```
+
+
+# Question 1
+
+Assume some budget calculations depend on whether a certain cost will be at least SEK
+120 000 or lower than this amount. A reasonable model for this cost is a normal
+distribution with standard deviation SEK 12 000 (independent of the mean) and a mean that can be modeled as normally distributed with mean 115 000 (SEK) and standard
+deviation 9 000 (SEK). No trend is anticipated for this cost and for the 6 previous
+periods the average cost was SEK 121 000.
+Note that the hypotheses are about the actual cost, not the expected cost.
+
+
+## a 
+
+Show that the prior odds for the hypothesis that the cost will exceed SEK 120 000
+(against the alternative that it will not) is about 0.59. [hint: write the observed variableas a sum of two independent random variable $\tilde x = \tilde \mu + \tilde \epsilon$]
+
+
+$$\tilde \mu \sim N (115000, 9000)$$
+
+Standard deviation of $\tilde x$ should then be 
+
+$$\sqrt{ 9000^2 + 12000^2} = 15000$$
+
+Now you have the mean and the standard deviation so you can calculate the standardized value for 120000.
+
+$$z = \frac{120000- 115000}{15000}$$
+
+From the normal cumulative distribution(standard) we get that the probability for x to be less than 120 000 to be 0.63056:
+
+so the prior odds to exceed 120000 is then 
+
+$$\frac{1-0.63056}{0.63056} \approx 0.59$$
+
+
+```{r}
+sd <- sqrt(9000^2+12000^2 )
+
+p <- pnorm(120000,115000,sd) # normal distribution mean of x< 120000
+
+p <- round(p,5)
+
+paste('The probability for the cost to be less than 120 0000 is', p)
+
+paste('The prior odds for the cost to exceed 120 000 is', round(((1-p)/p),3)) # odds
+
+```
+
+rounds to 0.59.
+
+
+## b
+
+Show that the Bayes factor (considering the average cost for the previous 6 periods)
+for the hypothesis that the cost will exceed SEK 120 000 (against the alternative that
+it will not) is about 1.63 [Not about 1.60 or about 1.70].
+
+
+$$B = \frac{Odds(H_0|data,I)}{Odds(H_A|data,I)}= \frac{P(H_0|data,I)/P(H_A|data,I)}{P(H_0|I)/P(H_A|I)}$$
+
+$$H_A:\text{The cost is lower or equal to 120000}$$
+
+$$H_0:\text{The cost is exceeds 120000}$$
+
+Prior odds for $H_0|I$ is calculated in a.
+
+
+The standard deviation when the data is collected is then 
+
+$$\sqrt{\frac{\sigma^2}{6}} = \frac{15000}{\sqrt{6}} = 6123.724$$
+We had a mean of 121000 for the collected data so our likelihood then follows:
+
+$$\tilde x \sim N (121000, 6123.724^2)$$
+
+
+
+
+
+```{r}
+
+datamean <- 121000
+dsd <- 15000 / sqrt(6)  
+
+z_data <- (120000 - dmean) / dsd
+
+
+H0 <- 1 - pnorm(z_data)  # P(cost > 120000 | data)
+HA <- pnorm(z_data)      # P(cost <= 120000 | data)
+
+
+bayes_factor <- (H0/HA)/((1-p)/p)
+
+bayes_factor
+```
+
+
+
+
+## c
+
+If the loss of accepting the hypothesis that the cost will be lower than SEK 120 000 while the opposite will be true is SEK 4 000, and the loss of accepting the
+hypothesis that the cost will be at least SEK 120 000 while the opposite will be true is SEK 6 000, which decision should be made for the budget (according to the rule of minimizing the expected loss)?
+
+
+# Question 2
+
+Consider a big box filled with an enormous amount of poker chips. You know that either 70% of the chips are red and the remainder blue, or 70% are blue and the remainder red. You must guess whether the big box has 70% red / 30% blue or 70% blue / 30% red. If you guess correctly, you win US dollar 5 . If you guess incorrectly, you lose US $ 3 . Your prior probability that the big box contains 70% red / 30% blue is 0.40, and you are risk neutral in your decision making (i.e. your utility is linear in money).
+
+
+
+
+## a 
+
+If you could purchase sample information in the form of one draw of a chip from the big box, how much should you be willing to pay for it? Assume now that the cost of sampling is US$0.25 (i.e. 25 US cents) per draw.
+
+```{r}
+d_matrix <- data.frame('actions'=c('Guess 70 % red', 'Guess  70 % blue'), 'State 1(70%red)'=c(5,-3), 'State 2(70%blue)'=c(-3,5))
+
+colnames(d_matrix) = c('actions','State 1(70%red)','State 2(70%blue)')
+knitr::kable(d_matrix)
+```
+
+Expected utility:
+
+$$\text{Action red} = 5\cdot 0.4 -3\cdot 0.6 = 0.2$$
+
+$$\text{Action blue} = -3\cdot 0.4 + 5\cdot 0.6 =1.8 $$
+Posterior distribution:
+
+$$P(\theta|BUY(sample)) = \frac{P(BUY|\theta)\cdot P(\theta)}{P(BUY)}$$
+
+Where $\theta$ is the states.
+
+Probability of drawing a red chip then (blue is then the opposite):
+
+$$P(Red) = 0.7\cdot0.4 + 0.3\cdot0.6 = 0.46$$
+
+So when the state is red then:
+$$P(State 1|Red)=\frac{0.7\cdot0.4}{0.46} = 0.6087$$
+
+$$P(State 2|Red)= 1-P(State 1|Red) = 0.3913$$
+
+
+Expected utility after sample
+
+Guessing 70% red (after observing red):
+$$E[U(a^{'})∣Red]=5 \cdot 0.6087 - 3\cdot 0.3913 = 1.8696$$
+
+Guessing 70% blue (after observing red):
+$$E[U(a^{''})∣Red] -35 \cdot 0.6087 +5 \cdot 0.3913 = 0.1304$$
+
+
+When utility is linear in money, we could also define VSI as
+
+$$ VSI(y_n) = E(R(a^{''}|y_n)|y_n) - E(R(a^{'})|y_n) $$
+
+So the VSI in this case is:
+
+$$1.8696 - 1.8 = 0.0696$$
+We dont have to calculate for when drawing a blue chip as the cost is symmetric, so the results will be the same. 
+
+
+
+
+
+Expected value of sample information(EVSI)
+
+
+$$EVSI= \sum_y VSI(y_n)\cdot f(y_n)dy_n$$
+
+$$ EVSI = 0.46 \cdot 0.0696 + 0.54⋅0.0696 = 0.1392  $$
+
+The amount you should be willing to pay is 0.1392.
+
+
+
+## b
+
+What is the ENGS for a sample of 10 chips using a single-stage sampling plan.
