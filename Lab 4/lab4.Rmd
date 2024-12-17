@@ -122,6 +122,8 @@ $$H_0:\text{The cost is exceeds 120000}$$
 
 Prior odds for $H_0|I$ is calculated in a.
 
+As the prior and the data are normal, the posterior is normal.
+
 
 The posterior is proportional to :
 
@@ -131,7 +133,7 @@ where
 
 $$\frac{1}{\tau^2_n} = \frac{n}{\sigma^2}+\frac{1}{\tau^2_0}$$
 
-n = 6 and $\sigma^2_n$ =  
+n = 6 and $\sigma^2_n$ = 15000^2
 
 $$\mu_n=w \bar x (1-w)\mu_o$$
 
@@ -146,14 +148,14 @@ $$w = \frac{\frac{n}{\sigma^2_n}}{\frac{n}{\sigma^2_n}+\frac{1}{\tau^2_0}}$$
 ```{r}
 
 datamean <- 121000
-dsd <- 15000 / sqrt(6)  
-sigma2 <- 460
 
-tau2 <- 1/(6/sigma2^2 + 1/15000^2)
-w <- (6/sigma2^2)/((6/sigma2^2)+1/15000^2)
+sigma <- 15000
+
+tau2 <- 1/(6/sigma^2 + 1/15000^2)
+w <- (6/sigma^2)/((6/sigma^2)+1/15000^2)
 mu_n <- w*121000 + ((1 - w)*115000)
 
-z_data <- (mu_n-120000) / tau2
+z_data <- (mu_n-120000) / sqrt(tau2)
 
 HA <-  pnorm(z_data)  # P(cost <= 120000 | data)
 H0 <- 1 - HA   
@@ -166,20 +168,18 @@ bayes_factor
 
 
 
-
-
-
-
 ## c
 
 If the loss of accepting the hypothesis that the cost will be lower than SEK 120 000 while the opposite will be true is SEK 4 000, and the loss of accepting the
 hypothesis that the cost will be at least SEK 120 000 while the opposite will be true is SEK 6 000, which decision should be made for the budget (according to the rule of minimizing the expected loss)?
 
+The probabilities are taken from the variables HA and H0 created in question b.
 
 $$EL[lower] = 0\cdot 0.5113018 + 0.4886982\cdot4000= 1954.793$$
 
 $$EL[higher] = 6000\cdot 0.5113018 + 0.4886982\cdot0 = 3067.811$$
-Action 1, 
+
+Action 1, has the lowest loss and is the optimal action according to the rule of minimizing the expected loss. 
 
 
 # Question 2
@@ -205,6 +205,8 @@ Expected utility:
 $$\text{Action red} = 5\cdot 0.4 -3\cdot 0.6 = 0.2$$
 
 $$\text{Action blue} = -3\cdot 0.4 + 5\cdot 0.6 =1.8 $$
+Optimal prior action is to guess for 70% blue.
+
 Posterior distribution:
 
 $$P(\theta|BUY(sample)) = \frac{P(BUY|\theta)\cdot P(\theta)}{P(BUY)}$$
@@ -230,27 +232,30 @@ $$P(State 2|Blue)= 1-P(State 1|Blue) = 0.7778$$
 Expected utility after sample
 
 Guessing 70% red (after observing red):
-$$E[U(Red)∣Red]=5 \cdot 0.6087 - 3\cdot 0.3913 = 1.8696$$
+$$E[R(Red)∣Red]=5 \cdot 0.6087 - 3\cdot 0.3913 = 1.8696$$
 
 Guessing 70% blue (after observing red):
-$$E[U(Blue)∣Red] =-3 \cdot 0.6087 +5 \cdot 0.3913 = 0.1304$$
+$$E[R(Blue)∣Red] =-3 \cdot 0.6087 +5 \cdot 0.3913 = 0.1304$$
 
 Guessing 70% red (after observing blue):
-$$E[U(Red)∣Blue]=5 \cdot 0.2222 - 3\cdot 0.7778 = −1.889$$
+$$E[R(Red)∣Blue]=5 \cdot 0.2222 - 3\cdot 0.7778 = −1.889$$
 
 
 Guessing 70% blue (after observing blue):
-$$E[U(Blue)∣Blue] =-3 \cdot 0.2222 +5 \cdot 0.7778 = 3.2223$$
+$$E[R(Blue)∣Blue] =-3 \cdot 0.2222 +5 \cdot 0.7778 = 3.2223$$
 
 When utility is linear in money, we could also define VSI as
 
+
 $$ VSI(y_n) = E(R(a^{''}|y_n)|y_n) - E(R(a^{'})|y_n) $$
+
+Posterior expected utility from posterior optimal action - Posterior expected utility with optimal action from prior.
 
 So the VSI in this case is:
 
-$$VSI(Red)=1.8696 - 0.2 = 1.6696$$
-
-$$VSI(Blue)=3.2223 - 1.8 = 1.4223$$
+$$VSI(Red)=1.8696 - 0.1304 = 1.7392$$
+No change in the action compared to prior
+$$VSI(Blue)=3.2223 - 3.2223 = 0$$
 
 
 
@@ -260,9 +265,12 @@ Expected value of sample information(EVSI)
 $$EVSI= \sum_y VSI(y_n)\cdot f(y_n)dy_n$$
 
 
-$$ EVSI = 0.46 \cdot 1.6696 + 0.54 \cdot1.4223 =  1.536058  $$
+$$ EVSI = 0.46 \cdot  1.7392 + 0.54 \cdot 0 =  0.800032  $$
 
-The amount you should be willing to pay is 1.536058.
+
+The amount you should be willing to pay for information is 0.800 $.
+
+
 
 
 
@@ -276,87 +284,11 @@ $$ENGS(n) = EVSI(n) - CS(n)$$
 
 Cost of 10 draws is 2.5$
 
-Using binomial sampling
-
-$$P(\theta | \text{Sample outcome}) \propto P(\theta | \text{Sample outcome}|\theta)P(\theta) $$
+The only samples that will make us change from the prior actions are the ones that have more red chips than blue, so we only have to consider the probabilities from drawing 6, 7, 8, 9 and 10 red chips out och 10 chips. 
 
 
 
 
 
-```{r}
-n =10 
 
-#possible outcomes
-dbinom(2,10,0.46)
-
-# Constants
-n <- 10  # Number of samples
-prior_theta1 <- 0.4  # Prior probability for State 1 (70% red)
-prior_theta2 <- 0.6  # Prior probability for State 2 (70% blue)
-cost_per_sample <- 0.25  # Cost per sample (USD)
-payoff_matrix <- matrix(c(5, -3, -3, 5), nrow = 2, byrow = TRUE)  # Payoff matrix
-
-# Function to calculate binomial probability P(y | theta)
-binomial_prob <- function(y, p, n) {
-  dbinom(y, n, p)
-}
-
-# Function to calculate posterior probabilities using Bayes' Theorem
-posterior_prob <- function(y, p_theta1, p_theta2, n) {
-  # P(y | theta1) for 70% red and P(y | theta2) for 70% blue
-  p_y_theta1 <- binomial_prob(y, 0.7, n)
-  p_y_theta2 <- binomial_prob(y, 0.3, n)
-  
-  # Total probability P(y)
-  p_y <- p_y_theta1 * p_theta1 + p_y_theta2 * p_theta2
-  
-  # Posterior P(theta1 | y) and P(theta2 | y)
-  p_theta1_given_y <- (p_y_theta1 * p_theta1) / p_y
-  p_theta2_given_y <- (p_y_theta2 * p_theta2) / p_y
-  
-  return(c(p_theta1_given_y, p_theta2_given_y))
-}
-
-# Function to compute expected utilities for each action
-expected_utilities <- function(y, p_theta1_given_y, p_theta2_given_y) {
-  # Expected utility for guessing 70% red
-  EU_red <- 5 * p_theta1_given_y - 3 * p_theta2_given_y
-  # Expected utility for guessing 70% blue
-  EU_blue <- -3 * p_theta1_given_y + 5 * p_theta2_given_y
-  
-  return(c(EU_red, EU_blue))
-}
-
-# Calculate expected utilities and posterior probabilities for all y values
-all_results <- data.frame(y = 0:n, EU_red = numeric(n+1), EU_blue = numeric(n+1), 
-                          p_theta1_given_y = numeric(n+1), p_theta2_given_y = numeric(n+1))
-
-for (y in 0:n) {
-  post_probs <- posterior_prob(y, prior_theta1, prior_theta2, n)
-  EU <- expected_utilities(y, post_probs[1], post_probs[2])
-  
-  all_results$EU_red[y+1] <- EU[1]
-  all_results$EU_blue[y+1] <- EU[2]
-  all_results$p_theta1_given_y[y+1] <- post_probs[1]
-  all_results$p_theta2_given_y[y+1] <- post_probs[2]
-}
-
-# Compute Expected Value of Sample Information (EVSI)
-EVSI <- sum(all_results$p_theta1_given_y * prior_theta1 * all_results$EU_red + 
-             all_results$p_theta2_given_y * prior_theta2 * all_results$EU_blue)
-
-# Calculate cost of sampling
-CS <- cost_per_sample * n
-
-# Calculate Expected Net Gain from Sampling (ENGS)
-ENGS <- EVSI - CS
-
-# Output results
-cat("Expected Value of Sample Information (EVSI):", EVSI, "\n")
-cat("Expected Net Gain from Sampling (ENGS):", ENGS, "\n")
-
-# Display results for each possible outcome
-print(all_results)
-```
 
