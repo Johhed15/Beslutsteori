@@ -30,8 +30,9 @@ The only samples that will make us change from the prior actions are the ones th
 
 But for the table too look closer to the one in the lecture I will do the calculations from collecting 0 red chips out of 10 even though the EVSI for y lower then 6 will be 0. 
 
+```{R}
 
-´´´{R}
+
 # Constants
 n <- 10 # Total draws
 prior_red <- 0.4 # Prior for state 1 (70% red)
@@ -96,7 +97,6 @@ paste('ENGS for a draw of 10 chips is: ',round(sum(results$EVSI) -2.5,2))
 ```
 
 
-```
 
 <br>
 <br>
