@@ -6,9 +6,15 @@ Posterior probability and odds
 
 ## labb 2 
 
+Decision making under ignorance and with data
+
 ## labb 3
 
+Problem reasoning around decisions 
+
 ## labb 4
+
+Bayesian decision-making and value of information sampling.
 
 # Exempeluppgift
 
